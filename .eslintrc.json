@@ -12,5 +12,6 @@
     "plugin:import/electron",
     "plugin:import/typescript"
   ],
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": true },
   "parser": "@typescript-eslint/parser"
 }
