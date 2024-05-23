@@ -1,0 +1,20 @@
+.mainScreenContainer{
+  background-color: black;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+.videoPlayer{
+  min-width: 90%;
+  min-height: 90%;
+
+  max-width: 99%;
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  }
