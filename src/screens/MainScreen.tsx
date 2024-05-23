@@ -27,12 +27,16 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const fetchStreamSource = async () => {
-      const srcID = await window.electronAPI.getStreamSource();
+    window.electronAPI.startStream().then(async (srcID: string) => {
       const stream = await getVideoStream(srcID);
       videoRef.current.srcObject = stream;
-    };
-    fetchStreamSource();
+    })
+
+    window.electronAPI.onUpdateStreamSource(async (srcID: string) => {
+      const stream = await getVideoStream(srcID);
+      videoRef.current.srcObject = stream;
+      console.log(srcID)
+    })
   }, []);
 
   return (
