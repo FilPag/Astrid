@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import styles from "./MainScreen.module.scss";
+import React, { useEffect, useRef } from 'react';
+import { InputBar } from '../components/InputBar';
+import styles from './MainScreen.module.scss';
 
 export interface MainScreenProps {
   // Add any props here if needed
@@ -11,7 +12,7 @@ const getVideoStream = async (srcID: string) => {
     video: {
       //@ts-ignore
       mandatory: {
-        chromeMediaSource: "desktop",
+        chromeMediaSource: 'desktop',
         chromeMediaSourceId: srcID,
         minFrameRate: 60,
         minWidth: 1280,
@@ -26,22 +27,25 @@ const getVideoStream = async (srcID: string) => {
 export const MainScreen: React.FC<MainScreenProps> = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const onSubmit = (message: string) => {
+    console.log(message);
+  };
+
   useEffect(() => {
     window.electronAPI.startStream().then(async (srcID: string) => {
       const stream = await getVideoStream(srcID);
-      videoRef.current.srcObject = stream;
-    })
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    });
 
     window.electronAPI.onUpdateStreamSource(async (srcID: string) => {
       const stream = await getVideoStream(srcID);
-      videoRef.current.srcObject = stream;
-      console.log(srcID)
-    })
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    });
   }, []);
 
   return (
     <div className={styles.mainScreenContainer}>
-      <video className={styles.videoPlayer} ref={videoRef} autoPlay></video>
+      <InputBar onSubmit={onSubmit} />
     </div>
   );
 };

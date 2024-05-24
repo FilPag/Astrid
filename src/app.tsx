@@ -1,6 +1,5 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { MainScreen } from "./screens";
+import { createRoot } from 'react-dom/client';
+import { MainScreen } from './render/screens';
 
 declare global {
   interface Window {
@@ -8,9 +7,5 @@ declare global {
   }
 }
 
-const root = createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
-    <MainScreen />
-  </React.StrictMode>,
-);
+const root = createRoot(document.getElementById('root'));
+root.render(<MainScreen />);
