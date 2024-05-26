@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { InputBar } from '../components/InputBar';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './MainScreen.module.scss';
+import { Message, InputBar, chatMessage } from '../components';
 
 export interface MainScreenProps {
   // Add any props here if needed
@@ -26,9 +26,13 @@ const getVideoStream = async (srcID: string) => {
 
 export const MainScreen: React.FC<MainScreenProps> = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const messageLogRef = useRef<HTMLUListElement>(null);
+  const [messages, setMessages] = useState<chatMessage[]>([]);
 
   const onSubmit = (message: string) => {
-    console.log(message);
+
+    setMessages([...messages, { userMessage: true, text: message }]);
+    console.log(messages)
   };
 
   useEffect(() => {
@@ -43,9 +47,20 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (messageLogRef.current) {
+      messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <div className={styles.mainScreenContainer}>
-      <InputBar onSubmit={onSubmit} />
+      <ul className={styles.messageLog} ref={messageLogRef}>
+        {messages.map((message, index) => (
+          <Message message={message} key={index} />
+        ))}
+      </ul>
+      <InputBar className={styles.inputBar} onSubmit={onSubmit} />
     </div>
   );
 };

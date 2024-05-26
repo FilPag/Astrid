@@ -15,10 +15,11 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
     title: 'Astrid',
     height: 400,
     width: 300,
-    x: trayBounds.x,
-    y: trayBounds.y,
+    //x: trayBounds.x,
+    //y: trayBounds.y,
     resizable: false,
     vibrancy: 'popover',
+    backgroundMaterial: 'acrylic',
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -28,6 +29,10 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
 
   mainWindow.setAlwaysOnTop(true, 'floating');
   mainWindow.webContents.openDevTools({ mode: 'detach' });
+
+  if(process.platform === 'win32'){
+    mainWindow.menuBarVisible = false;
+  }
 
   mainWindow.on('close', (event) => {
     if (!shouldQuit) {

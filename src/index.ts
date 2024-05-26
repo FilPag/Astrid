@@ -8,7 +8,9 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-app.dock.hide();
+if (process.platform === 'darwin') {
+  app.dock.hide();
+}
 
 app.whenReady().then(() => {
   ipcMain.handle('startStream', () => {
