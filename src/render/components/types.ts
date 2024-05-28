@@ -1,4 +1,4 @@
 export interface chatMessage {
-  userMessage: boolean;
-  text: string;
+  role: 'user' | 'assistant';
+  content: string;
 }

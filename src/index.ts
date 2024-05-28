@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+import * as Astrid from './main/Astrid';
 import { startStream } from './main/StreamManager';
 import * as TrayManager from './main/TrayManager';
 import * as WindowManager from './main/WindowManager';
@@ -16,6 +18,12 @@ app.whenReady().then(() => {
   ipcMain.handle('startStream', () => {
     return startStream();
   });
+
+  ipcMain.handle('sendMessage', async (_event, message) => {
+    return Astrid.sendMessage(message);
+  });
+
+  Astrid.init();
 
   TrayManager.createTray();
   setTimeout(() => {

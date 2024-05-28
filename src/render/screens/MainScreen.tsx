@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+
+import OpenAI from 'openai';
+import { InputBar, Message, chatMessage } from '../components';
 import styles from './MainScreen.module.scss';
-import { Message, InputBar, chatMessage } from '../components';
 
 export interface MainScreenProps {
   // Add any props here if needed
@@ -29,10 +31,28 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const messageLogRef = useRef<HTMLUListElement>(null);
   const [messages, setMessages] = useState<chatMessage[]>([]);
 
-  const onSubmit = (message: string) => {
+  const onSubmit = async (message: string) => {
+    const userMessage: chatMessage = { role: 'user', content: message };
+    setMessages([...messages, userMessage]);
 
-    setMessages([...messages, { userMessage: true, text: message }]);
-    console.log(messages)
+    const response: OpenAI.Beta.Threads.Messages.Message[] = await window.electronAPI.sendMessage({
+      role: 'user',
+      content: message,
+    });
+
+    const newMessages = response.map((m) => {
+      if (m.content[0].type !== 'text') return;
+
+      let value: string;
+      if (m.role === 'assistant') {
+        value = JSON.parse(m.content[0].text.value).message;
+      } else {
+        value = m.content[0].text.value;
+      }
+      return { role: m.role, content: value };
+    });
+
+    setMessages(newMessages.reverse());
   };
 
   useEffect(() => {

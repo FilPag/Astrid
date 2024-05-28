@@ -7,13 +7,11 @@ export interface MessageProps {
   message: chatMessage;
 }
 export const Message: React.FC<MessageProps> = ({ className, message }) => {
-  const messageClass = message.userMessage ? styles.userMessage : styles.botMessage;
+  const messageClass = message.role === 'user' ? styles.userMessage : styles.botMessage;
 
   return (
     <div className={[styles.container, className, messageClass].join(' ')}>
-      <p className={`${styles.message}`}>
-        {message.text}
-      </p>
+      <p className={`${styles.message}`}>{message.content}</p>
     </div>
   );
 };

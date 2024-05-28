@@ -4,6 +4,7 @@ import { MainScreen } from './render/screens';
 declare global {
   interface Window {
     electronAPI?: any;
+    env?: any;
   }
 }
 
