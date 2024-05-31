@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
 import * as Astrid from './main/Astrid';
 import { startStream } from './main/StreamManager';
 import * as TrayManager from './main/TrayManager';
@@ -14,13 +15,23 @@ if (process.platform === 'darwin') {
   app.dock.hide();
 }
 
+const onMessageCreated = (message: Message) => {
+  WindowManager.mainWindow.webContents.send('messageCreated', message);
+};
+const onMessageDelta = (delta: MessageDelta, snapshot: Message) => {
+  WindowManager.mainWindow.webContents.send('messageDelta', delta, snapshot);
+};
+const onMessageDone = (message: Message) => {
+  WindowManager.mainWindow.webContents.send('messageDone', message);
+};
+
 app.whenReady().then(() => {
   ipcMain.handle('startStream', () => {
     return startStream();
   });
 
-  ipcMain.handle('sendMessage', async (_event, message) => {
-    return Astrid.sendMessage(message);
+  ipcMain.on('sendMessage', async (_event, message) => {
+    return Astrid.sendMessage(message, onMessageCreated, onMessageDelta, onMessageDone);
   });
 
   Astrid.init();

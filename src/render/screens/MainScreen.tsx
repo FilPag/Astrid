@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import OpenAI from 'openai';
-import { InputBar, Message, chatMessage } from '../components';
+import { Message } from 'openai/resources/beta/threads/messages';
+import { InputBar, Message as MessageComponent, chatMessage } from '../components';
 import styles from './MainScreen.module.scss';
 
 export interface MainScreenProps {
@@ -26,33 +26,29 @@ const getVideoStream = async (srcID: string) => {
   });
 };
 
+const processMessage = (message: Message) => {
+  if (message.content.length === 0) return undefined;
+  if (message.content[0].type !== 'text') return undefined;
+  return { role: message.role, content: message.content[0].text.value };
+};
+
 export const MainScreen: React.FC<MainScreenProps> = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const messageLogRef = useRef<HTMLUListElement>(null);
+
   const [messages, setMessages] = useState<chatMessage[]>([]);
+  const [currentMessage, setCurrentMessage] = useState<chatMessage>(undefined);
+  const [isDone, setIsDone] = useState<boolean>(true);
 
   const onSubmit = async (message: string) => {
     const userMessage: chatMessage = { role: 'user', content: message };
     setMessages([...messages, userMessage]);
+    setIsDone(false);
 
-    const response: OpenAI.Beta.Threads.Messages.Message[] = await window.electronAPI.sendMessage({
+    await window.electronAPI.sendMessage({
       role: 'user',
       content: message,
     });
-
-    const newMessages = response.map((m) => {
-      if (m.content[0].type !== 'text') return;
-
-      let value: string;
-      if (m.role === 'assistant') {
-        value = JSON.parse(m.content[0].text.value).message;
-      } else {
-        value = m.content[0].text.value;
-      }
-      return { role: m.role, content: value };
-    });
-
-    setMessages(newMessages.reverse());
   };
 
   useEffect(() => {
@@ -65,22 +61,37 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
       const stream = await getVideoStream(srcID);
       if (videoRef.current) videoRef.current.srcObject = stream;
     });
+
+    window.electronAPI.onMessageCreated((message: Message) => {
+      setCurrentMessage(processMessage(message));
+    });
+    window.electronAPI.onMessageDelta((delta: any, snapshot: Message) => {
+      setCurrentMessage(processMessage(snapshot));
+    });
+    window.electronAPI.onMessageDone((msg: Message) => {
+      const processedMsg = processMessage(msg);
+      setMessages((prevMessages) => [...prevMessages, processedMsg]);
+
+      setCurrentMessage(undefined);
+      setIsDone(true);
+    });
   }, []);
 
   useEffect(() => {
     if (messageLogRef.current) {
       messageLogRef.current.scrollTop = messageLogRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, currentMessage]);
 
   return (
     <div className={styles.mainScreenContainer}>
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (
-          <Message message={message} key={index} />
+          <MessageComponent message={message} key={index} />
         ))}
+        {currentMessage && <MessageComponent message={currentMessage} />}
       </ul>
-      <InputBar className={styles.inputBar} onSubmit={onSubmit} />
+      <InputBar className={styles.inputBar} onSubmit={onSubmit} enabled={isDone} />
     </div>
   );
 };

@@ -13,11 +13,11 @@ export const triggerQuit = (): void => {
 export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
   mainWindow = new BrowserWindow({
     title: 'Astrid',
+    minHeight: 400,
+    minWidth: 300,
     height: 400,
     width: 300,
-    //x: trayBounds.x,
-    //y: trayBounds.y,
-    resizable: false,
+    //resizable: false,
     vibrancy: 'popover',
     backgroundMaterial: 'acrylic',
     webPreferences: {
@@ -30,7 +30,7 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
   mainWindow.setAlwaysOnTop(true, 'floating');
   mainWindow.webContents.openDevTools({ mode: 'detach' });
 
-  if(process.platform === 'win32'){
+  if (process.platform === 'win32') {
     mainWindow.menuBarVisible = false;
   }
 

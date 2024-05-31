@@ -3,9 +3,10 @@ import styles from './InputBar.module.scss';
 
 export interface InputBarProps {
   className?: string;
+  enabled?: boolean;
   onSubmit: (message: string) => void;
 }
-export const InputBar: React.FC<InputBarProps> = ({ className, onSubmit }) => {
+export const InputBar: React.FC<InputBarProps> = ({ className, enabled, onSubmit }) => {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       const target = event.target as HTMLTextAreaElement;
@@ -22,7 +23,7 @@ export const InputBar: React.FC<InputBarProps> = ({ className, onSubmit }) => {
 
   return (
     <div className={className}>
-      <textarea className={`${styles.inputBar}`} onKeyDown={handleKeyDown}></textarea>
+      <textarea className={`${styles.inputBar}`} onKeyDown={handleKeyDown} disabled={!enabled}></textarea>
     </div>
   );
 };
