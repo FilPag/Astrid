@@ -1,9 +1,7 @@
 import OpenAI from 'openai';
 import { AssistantStream } from 'openai/lib/AssistantStream';
-import { Assistant } from 'openai/resources/beta/assistants';
+import { AssistantStreamEvent } from 'openai/resources/beta/assistants';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
-import { ToolCall, ToolCallDelta } from 'openai/resources/beta/threads/runs/steps';
-import { Thread } from 'openai/resources/beta/threads/threads';
 import { chatMessage } from '../render/components';
 import { functions, handleToolCall } from './functions';
 
@@ -11,15 +9,19 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-let astrid: Assistant;
-let currentThread: Thread;
+let astrid: OpenAI.Beta.Assistant;
+let currentThread: OpenAI.Beta.Thread;
+
+const instructionString = `You are an exstension of the operating system on my computer. You have access to everything on the pc\
+ Answer concisely and summarize any outputs. Do not describe your process it is done for you.\
+ run no commands that can hurt the computer.`;
 
 export const init = async () => {
   const assistants = await openai.beta.assistants.list();
   if (assistants.data.length === 0) {
     astrid = await openai.beta.assistants.create({
       name: 'Astrid',
-      instructions: 'You are an exstension of the operating system on my computer.',
+      instructions: instructionString,
       model: 'gpt-3.5-turbo',
     });
   } else {
@@ -47,20 +49,19 @@ const addEventListensers = (
     onDone(msg);
   });
 
-  let args = '';
-  stream.on('toolCallDelta', (delta: ToolCallDelta) => {
-    if (delta.type === 'function') args += delta.function.arguments;
-  });
-
-  stream.on('toolCallDone', async (toolCall: ToolCall) => {
-    if (toolCall.type !== 'function') return;
-
-    const outputs = await handleToolCall(toolCall.id, toolCall.function.name, args);
-    const s = openai.beta.threads.runs.submitToolOutputsStream(currentThread.id, stream.currentRun().id, {
-      tool_outputs: [outputs],
-    });
-    args = '';
-    addEventListensers(s, onCreate, onDelta, onDone);
+  //Handle other events
+  stream.on('event', async (event: AssistantStreamEvent) => {
+    if (event.event === 'thread.run.requires_action') {
+      const toolCalls = event.data.required_action.submit_tool_outputs.tool_calls;
+      let outputs = [];
+      for (const toolCall of toolCalls) {
+        outputs.push(await handleToolCall(toolCall.id, toolCall.function.name, toolCall.function.arguments));
+      }
+      const s = openai.beta.threads.runs.submitToolOutputsStream(currentThread.id, stream.currentRun().id, {
+        tool_outputs: outputs,
+      });
+      addEventListensers(s, onCreate, onDelta, onDone);
+    }
   });
 };
 

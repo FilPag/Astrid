@@ -91,4 +91,5 @@ typings/
 .vite/
 
 # Electron-Forge
-out/
+out
+/test
