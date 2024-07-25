@@ -8,17 +8,14 @@
   background-color: #3f3e3c;
   max-width: 600px;
   width: 100%;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  height: 5em;
+  padding: 0.5em;
+  scroll-padding: 0.5em;
 
   ::-webkit-scrollbar {
     display: none;
   }
-
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-
-  height: 5em;
-  padding: 0.5em;
-  scroll-padding: 0.5em;
-  
 
 }

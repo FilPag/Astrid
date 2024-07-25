@@ -39,16 +39,35 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const [messages, setMessages] = useState<chatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState<chatMessage>(undefined);
   const [isDone, setIsDone] = useState<boolean>(true);
+  const [screenSharing, setScreenSharing] = useState<boolean>(true);
+
+  const getCurrentFrame = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      const dataURL = canvas.toDataURL('image/png');
+
+      return dataURL;
+    }
+  };
 
   const onSubmit = async (message: string) => {
     const userMessage: chatMessage = { role: 'user', content: message };
     setMessages([...messages, userMessage]);
     setIsDone(false);
 
+    let image = '';
+    if (screenSharing) {
+      image = getCurrentFrame();
+    }
     await window.electronAPI.sendMessage({
       role: 'user',
-      content: message,
-    });
+      content: { message: message, image: image },
+    },
+    );
   };
 
   useEffect(() => {
@@ -85,6 +104,8 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
 
   return (
     <div className={styles.mainScreenContainer}>
+      <button onClick={getCurrentFrame}>Save Frame</button>
+      <video ref={videoRef} className={styles.video} autoPlay />
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (
           <MessageComponent message={message} key={index} />
