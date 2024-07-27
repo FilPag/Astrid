@@ -39,9 +39,34 @@
 }
 
 .screenShareButton {
+  height: 32px;
+  width: 32px;
+  top: 10px;
+  left: 10px;
+  border-color: #555;
+  border-style: solid;
+  border-radius: 5px;
+
+  padding: 0;
+  position: absolute;
   background-color: #555;
 }
 
+.screenShareButton > img {
+  width: 100%;
+}
+
+.screenShareButton:active {
+  border-style: outset;
+}
+
+.screenShareButton :hover{
+  cursor: pointer;
+}
+
+.screenShareButtonOn {
+  border-color: red;
+}
 .videoPlayer {
   position: absolute;
   height: auto;

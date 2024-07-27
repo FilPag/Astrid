@@ -54,7 +54,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
       if (videoRef.current) videoRef.current.srcObject = stream;
     } else {
       window.electronAPI.stopStream();
-      videoRef.current.srcObject = undefined;
+      if (videoRef.current) videoRef.current.srcObject = undefined;
       setStream(undefined);
     }
   };
@@ -119,11 +119,14 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
 
   return (
     <div className={styles.mainScreenContainer}>
-      <button className={styles.screenShareButton} onClick={toggleStream}>
-        <img src={img} alt="Share" />
+      <button
+        title="Share Screen"
+        className={`${styles.screenShareButton} ${isSharing ? styles.screenShareButtonOn : ''}`}
+        onClick={toggleStream}
+      >
+        <img src={img} alt="Share Screen" />
       </button>
-      <button onClick={getCurrentFrame}>Get current frame</button>
-      <video ref={videoRef} className={styles.video} autoPlay />
+      {/*<video ref={videoRef} className={styles.video} autoPlay />*/}
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (
           <MessageComponent message={message} key={index} />

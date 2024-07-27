@@ -29,7 +29,7 @@ export const init = async () => {
 
   const files = await openai.files.list();
   for (const file of files.data) {
-    await openai.files.del(file.id);
+    openai.files.del(file.id);
   }
 
   currentThread = await openai.beta.threads.create();
