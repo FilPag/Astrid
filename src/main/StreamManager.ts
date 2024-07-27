@@ -38,3 +38,8 @@ export const startStream = async () => {
 
   return srcID;
 };
+
+export const stopStream = async () => {
+  clearInterval(streamMonitor);
+  streamMonitor = undefined;
+};

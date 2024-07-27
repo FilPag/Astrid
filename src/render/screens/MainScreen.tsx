@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+import img from '../../assets/share_icon.svg';
+
 import { Message } from 'openai/resources/beta/threads/messages';
 import { InputBar, Message as MessageComponent, chatMessage } from '../components';
 import styles from './MainScreen.module.scss';
@@ -39,19 +41,40 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const [messages, setMessages] = useState<chatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState<chatMessage>(undefined);
   const [isDone, setIsDone] = useState<boolean>(true);
-  const [screenSharing, setScreenSharing] = useState<boolean>(true);
+  const [isSharing, setIsSharing] = useState<boolean>(false);
+  const [stream, setStream] = useState<MediaStream>(undefined);
 
-  const getCurrentFrame = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const context = canvas.getContext('2d');
-      context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      const dataURL = canvas.toDataURL('image/png');
-
-      return dataURL;
+  const toggleStream = async () => {
+    const newIsSharing = !isSharing;
+    setIsSharing(newIsSharing);
+    if (newIsSharing) {
+      const srcID = await window.electronAPI.startStream();
+      const stream = await getVideoStream(srcID);
+      setStream(stream);
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } else {
+      window.electronAPI.stopStream();
+      videoRef.current.srcObject = undefined;
+      setStream(undefined);
     }
+  };
+
+  const getCurrentFrame = async () => {
+    if (!isSharing) return '';
+    const track = stream.getVideoTracks()[0];
+    //Hacky but works
+    const imageCapture = new (window as any).ImageCapture(track);
+
+    const image: ImageBitmap = await imageCapture.grabFrame();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const context = canvas.getContext('2d');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const base64 = canvas.toDataURL('image/png');
+
+    return base64;
   };
 
   const onSubmit = async (message: string) => {
@@ -59,23 +82,15 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
     setMessages([...messages, userMessage]);
     setIsDone(false);
 
-    let image = '';
-    if (screenSharing) {
-      image = getCurrentFrame();
-    }
+    const image = await getCurrentFrame();
+
     await window.electronAPI.sendMessage({
       role: 'user',
       content: { message: message, image: image },
-    },
-    );
+    });
   };
 
   useEffect(() => {
-    window.electronAPI.startStream().then(async (srcID: string) => {
-      const stream = await getVideoStream(srcID);
-      if (videoRef.current) videoRef.current.srcObject = stream;
-    });
-
     window.electronAPI.onUpdateStreamSource(async (srcID: string) => {
       const stream = await getVideoStream(srcID);
       if (videoRef.current) videoRef.current.srcObject = stream;
@@ -104,7 +119,10 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
 
   return (
     <div className={styles.mainScreenContainer}>
-      <button onClick={getCurrentFrame}>Save Frame</button>
+      <button className={styles.screenShareButton} onClick={toggleStream}>
+        <img src={img} alt="Share" />
+      </button>
+      <button onClick={getCurrentFrame}>Get current frame</button>
       <video ref={videoRef} className={styles.video} autoPlay />
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (

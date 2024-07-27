@@ -1,4 +1,3 @@
-import fs from 'fs';
 import OpenAI, { toFile } from 'openai';
 import { AssistantStream } from 'openai/lib/AssistantStream';
 import { AssistantStreamEvent } from 'openai/resources/beta/assistants';
@@ -28,12 +27,16 @@ export const init = async () => {
     astrid = await openai.beta.assistants.retrieve(assistants.data[0].id);
   }
 
+  const files = await openai.files.list();
+  for (const file of files.data) {
+    await openai.files.del(file.id);
+  }
+
   currentThread = await openai.beta.threads.create();
 };
 
 const addEventListensers = (
   stream: AssistantStream,
-  file_ID: string,
   onCreate: (arg0: any) => void,
   onDelta: (arg0: OpenAI.Beta.Threads.Messages.MessageDelta, arg1: OpenAI.Beta.Threads.Messages.Message) => void,
   onDone: (arg0: OpenAI.Beta.Threads.Messages.Message) => void
@@ -48,8 +51,9 @@ const addEventListensers = (
 
   stream.on('messageDone', async (msg: Message) => {
     onDone(msg);
-    await openai.files.del(file_ID)
-    console.debug('file deleted');
+    //No need to to this since files doesn't cost anything
+    /*await openai.files.del(file_ID)
+    console.debug('file deleted');*/
   });
 
   //Handle other events
@@ -63,13 +67,13 @@ const addEventListensers = (
       const s = openai.beta.threads.runs.submitToolOutputsStream(currentThread.id, stream.currentRun().id, {
         tool_outputs: outputs,
       });
-      addEventListensers(s, file_ID, onCreate, onDelta, onDone);
+      addEventListensers(s, onCreate, onDelta, onDone);
     }
   });
 };
 interface ipc_message {
-  role: string,
-  content: any
+  role: string;
+  content: any;
 }
 
 export const sendMessage = async (
@@ -78,21 +82,22 @@ export const sendMessage = async (
   onDelta: (arg0: MessageDelta, arg1: Message) => void,
   onDone: (arg0: Message) => void
 ) => {
+  const content: OpenAI.Beta.Threads.Messages.MessageContentPartParam[] = [
+    { type: 'text', text: message.content.message },
+  ];
 
-
-  const buffer = Buffer.from(message.content.image.split(",")[1], 'base64');
-  const file = await openai.files.create({ file: await toFile(buffer, 'screenshot.png'), purpose: 'vision' });
-
-  const parsed_message: OpenAI.Beta.Threads.Runs.RunCreateParams.AdditionalMessage = {
-    role: message.role as "user" | "assistant",
-    content: [
-      { type: "text", text: message.content.message },
-      {
-        type: "image_file",
-        image_file: { file_id: file.id },
-      }
-    ]
+  if (message.content.image !== '') {
+    const buffer = Buffer.from(message.content.image.split(',')[1], 'base64');
+    const file = await openai.files.create({ file: await toFile(buffer, 'screenshot.png'), purpose: 'vision' });
+    content.push({
+      type: 'image_file',
+      image_file: { file_id: file.id },
+    });
   }
+  const parsed_message: OpenAI.Beta.Threads.Runs.RunCreateParams.AdditionalMessage = {
+    role: message.role as 'user' | 'assistant',
+    content,
+  };
 
   const stream = openai.beta.threads.runs.stream(currentThread.id, {
     assistant_id: astrid.id,
@@ -100,5 +105,5 @@ export const sendMessage = async (
     tools: functions,
   });
 
-  addEventListensers(stream, file.id, onCreate, onDelta, onDone);
+  addEventListensers(stream, onCreate, onDelta, onDone);
 };

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
 import * as Astrid from './main/Astrid';
-import { startStream } from './main/StreamManager';
+import { startStream, stopStream } from './main/StreamManager';
 import * as TrayManager from './main/TrayManager';
 import * as WindowManager from './main/WindowManager';
 
@@ -28,6 +28,9 @@ const onMessageDone = (message: Message) => {
 app.whenReady().then(() => {
   ipcMain.handle('startStream', () => {
     return startStream();
+  });
+  ipcMain.handle('stopStream', () => {
+    return stopStream();
   });
 
   ipcMain.on('sendMessage', async (_event, message) => {

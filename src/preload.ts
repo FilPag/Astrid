@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateStreamSource: (callback: (event: Electron.IpcRendererEvent, ...args: any[]) => void) =>
     ipcRenderer.on('updateStreamSource', (_event, value) => callback(value)),
   startStream: () => ipcRenderer.invoke('startStream'),
+  stopStream: () => ipcRenderer.invoke('stopStream'),
   sendMessage: (message: any) => {
     ipcRenderer.send('sendMessage', message);
   },
