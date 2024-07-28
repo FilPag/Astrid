@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import img from '../../assets/share_icon.svg';
-
 import { Message } from 'openai/resources/beta/threads/messages';
-import { InputBar, Message as MessageComponent, chatMessage } from '../components';
+import toggleIcon from '../../assets/share_icon.svg';
+import { InputBar, Message as MessageComponent, SlideToggle, chatMessage } from '../components';
 import styles from './MainScreen.module.scss';
 
 export interface MainScreenProps {
@@ -44,10 +43,10 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const [isSharing, setIsSharing] = useState<boolean>(false);
   const [stream, setStream] = useState<MediaStream>(undefined);
 
-  const toggleStream = async () => {
-    const newIsSharing = !isSharing;
-    setIsSharing(newIsSharing);
-    if (newIsSharing) {
+  const toggleStream = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.checked);
+    setIsSharing(e.target.checked);
+    if (e.target.checked) {
       const srcID = await window.electronAPI.startStream();
       const stream = await getVideoStream(srcID);
       setStream(stream);
@@ -119,13 +118,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
 
   return (
     <div className={styles.mainScreenContainer}>
-      <button
-        title="Share Screen"
-        className={`${styles.screenShareButton} ${isSharing ? styles.screenShareButtonOn : ''}`}
-        onClick={toggleStream}
-      >
-        <img src={img} alt="Share Screen" />
-      </button>
+      <SlideToggle onToggle={toggleStream} icon={toggleIcon} />
       {/*<video ref={videoRef} className={styles.video} autoPlay />*/}
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (

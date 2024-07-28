@@ -1,0 +1,79 @@
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  top: 10px;
+  left: 10px;
+  padding: 0;
+  gap: 5px;
+  position: absolute;
+}
+.toggleContainer > img {
+  flex: 1;
+  max-width: 25px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch {
+  flex: 2;
+  position: relative;
+  display: inline-block;
+  min-width: 40px;
+  max-width: 34px;
+  height: 12px;
+}
+
+.switch:hover{
+  cursor: pointer;
+}
+
+.slider {
+  flex: 2;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  border-radius: 50%;
+
+  content: "";
+  height: 18px;
+  width: 18px;
+  top: -3px;
+  left: 0px;
+
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked+.slider {
+  background-color: #2196F3;
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked+.slider:before {
+  -webkit-transform: translateX(24px);
+  -ms-transform: translateX(24px);
+  transform: translateX(24px);
+}
+
+.slider {
+  border-radius: 34px;
+}
