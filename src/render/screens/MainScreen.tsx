@@ -44,7 +44,6 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const [stream, setStream] = useState<MediaStream>(undefined);
 
   const toggleStream = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.checked);
     setIsSharing(e.target.checked);
     if (e.target.checked) {
       const srcID = await window.electronAPI.startStream();
@@ -118,7 +117,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
 
   return (
     <div className={styles.mainScreenContainer}>
-      <SlideToggle onToggle={toggleStream} icon={toggleIcon} />
+      <SlideToggle className={styles.streamToggle} onToggle={toggleStream} icon={toggleIcon} />
       {/*<video ref={videoRef} className={styles.video} autoPlay />*/}
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (

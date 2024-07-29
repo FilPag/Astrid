@@ -23,7 +23,12 @@ export const InputBar: React.FC<InputBarProps> = ({ className, enabled, onSubmit
 
   return (
     <div className={className}>
-      <textarea className={`${styles.inputBar}`} onKeyDown={handleKeyDown} disabled={!enabled}></textarea>
+      <textarea
+        placeholder="Send a message to Astrid"
+        className={`${styles.inputBar}`}
+        onKeyDown={handleKeyDown}
+        disabled={!enabled}
+      ></textarea>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import OpenAI, { toFile } from 'openai';
 import { AssistantStream } from 'openai/lib/AssistantStream';
 import { AssistantStreamEvent } from 'openai/resources/beta/assistants';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
+import { AssistantPrompt } from './AssistantPrompt';
 import { functions, handleToolCall } from './functions';
 
 const openai = new OpenAI({
@@ -11,10 +12,7 @@ const openai = new OpenAI({
 let astrid: OpenAI.Beta.Assistant;
 let currentThread: OpenAI.Beta.Thread;
 
-const instructionString = `You are an exstension of the operating system on my computer. You have access to everything on the pc\
- Answer concisely and summarize any outputs. Do not describe your process it is done for you.\
- run no commands which can hurt the computer.`;
-
+const instructionString = AssistantPrompt;
 export const init = async () => {
   const assistants = await openai.beta.assistants.list();
   if (assistants.data.length === 0) {
