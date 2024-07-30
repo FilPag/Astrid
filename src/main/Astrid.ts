@@ -11,6 +11,7 @@ const openai = new OpenAI({
 
 let astrid: OpenAI.Beta.Assistant;
 let currentThread: OpenAI.Beta.Thread;
+let currentRun: AssistantStream;
 
 const instructionString = AssistantPrompt;
 export const init = async () => {
@@ -34,20 +35,24 @@ export const init = async () => {
 };
 
 const addEventListensers = (
-  stream: AssistantStream,
   onCreate: (arg0: any) => void,
   onDelta: (arg0: OpenAI.Beta.Threads.Messages.MessageDelta, arg1: OpenAI.Beta.Threads.Messages.Message) => void,
   onDone: (arg0: OpenAI.Beta.Threads.Messages.Message) => void
 ) => {
-  stream.on('messageCreated', (msg) => {
+  currentRun.on('abort', () => {
+    console.debug('Run aborted');
+    currentRun.currentRun();
+    openai.beta.threads.runs.cancel(currentThread.id, currentRun.currentRun().id);
+  });
+  currentRun.on('messageCreated', (msg) => {
     onCreate(msg);
   });
 
-  stream.on('messageDelta', (delta: MessageDelta, snapshot: Message) => {
+  currentRun.on('messageDelta', (delta: MessageDelta, snapshot: Message) => {
     onDelta(delta, snapshot);
   });
 
-  stream.on('messageDone', async (msg: Message) => {
+  currentRun.on('messageDone', async (msg: Message) => {
     onDone(msg);
     //No need to to this since files doesn't cost anything
     /*await openai.files.del(file_ID)
@@ -55,17 +60,17 @@ const addEventListensers = (
   });
 
   //Handle other events
-  stream.on('event', async (event: AssistantStreamEvent) => {
+  currentRun.on('event', async (event: AssistantStreamEvent) => {
     if (event.event === 'thread.run.requires_action') {
       const toolCalls = event.data.required_action.submit_tool_outputs.tool_calls;
       let outputs = [];
       for (const toolCall of toolCalls) {
         outputs.push(await handleToolCall(toolCall.id, toolCall.function.name, toolCall.function.arguments));
       }
-      const s = openai.beta.threads.runs.submitToolOutputsStream(currentThread.id, stream.currentRun().id, {
+      currentRun = openai.beta.threads.runs.submitToolOutputsStream(currentThread.id, currentRun.currentRun().id, {
         tool_outputs: outputs,
       });
-      addEventListensers(s, onCreate, onDelta, onDone);
+      addEventListensers(onCreate, onDelta, onDone);
     }
   });
 };
@@ -73,6 +78,10 @@ interface ipc_message {
   role: string;
   content: any;
 }
+
+export const cancelRun = () => {
+  currentRun.abort();
+};
 
 export const sendMessage = async (
   message: ipc_message,
@@ -97,11 +106,11 @@ export const sendMessage = async (
     content,
   };
 
-  const stream = openai.beta.threads.runs.stream(currentThread.id, {
+  currentRun = openai.beta.threads.runs.stream(currentThread.id, {
     assistant_id: astrid.id,
     additional_messages: [parsed_message],
     tools: functions,
   });
 
-  addEventListensers(stream, onCreate, onDelta, onDone);
+  addEventListensers(onCreate, onDelta, onDone);
 };

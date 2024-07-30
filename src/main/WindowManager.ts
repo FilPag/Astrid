@@ -28,7 +28,7 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   mainWindow.setAlwaysOnTop(true, 'floating');
-  mainWindow.webContents.openDevTools({ mode: 'detach' });
+  mainWindow.webContents.openDevTools({ mode: 'undocked' });
 
   if (process.platform === 'win32') {
     mainWindow.menuBarVisible = false;

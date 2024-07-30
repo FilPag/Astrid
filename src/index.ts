@@ -33,6 +33,10 @@ app.whenReady().then(() => {
     return stopStream();
   });
 
+  ipcMain.handle('cancelRun', () => {
+    Astrid.cancelRun();
+  });
+
   ipcMain.on('sendMessage', async (_event, message) => {
     return Astrid.sendMessage(message, onMessageCreated, onMessageDelta, onMessageDone);
   });

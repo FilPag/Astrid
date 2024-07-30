@@ -88,6 +88,16 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
     });
   };
 
+  const onCancel = () => {
+    console.log('aborting');
+    window.electronAPI.cancelRun();
+
+    setMessages((prevMessages) => [...prevMessages, currentMessage]);
+    setCurrentMessage(undefined);
+
+    setIsDone(true);
+  };
+
   useEffect(() => {
     window.electronAPI.onUpdateStreamSource(async (srcID: string) => {
       const stream = await getVideoStream(srcID);
@@ -125,7 +135,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
         ))}
         {currentMessage && <MessageComponent message={currentMessage} />}
       </ul>
-      <InputBar className={styles.inputBar} onSubmit={onSubmit} enabled={isDone} />
+      <InputBar className={styles.inputBar} onSubmit={onSubmit} onCancel={onCancel} disabled={!isDone} />
     </div>
   );
 };
