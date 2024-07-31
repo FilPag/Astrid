@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
-import { MainScreen } from './render/screens';
+import { HashRouter, Route, Routes } from 'react-router-dom';
+import { InputScreen, MainScreen } from './render/screens';
 
 declare global {
   interface Window {
@@ -9,4 +10,16 @@ declare global {
 }
 
 const root = createRoot(document.getElementById('root'));
-root.render(<MainScreen />);
+//root.render(<MainScreen />);
+console.log(window.location.pathname);
+if (window.location.pathname === 'main_window/input') {
+}
+
+root.render(
+  <HashRouter>
+    <Routes>
+      <Route path="/input" Component={InputScreen} />
+      <Route path="/" Component={MainScreen} />
+    </Routes>
+  </HashRouter>
+);

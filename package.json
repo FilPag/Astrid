@@ -67,6 +67,8 @@
     "openai": "^4.47.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.25.1",
     "stylelint-config-standard-scss": "^13.1.0",
     "typed-scss-modules": "^8.0.1"
   },

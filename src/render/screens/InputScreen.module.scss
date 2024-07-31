@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  width: calc(100% - 1em);
+  height: 100%;
+
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  align-items: center;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-app-region: drag;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.input {
+  flex: 1;
+  border-width: 0;
+  box-sizing: border-box;
+  height: 70%;
+
+  color: white;
+  background-color: transparent;
+
+  font-size: 1.5em;
+  font-family: 'Roboto', sans-serif;
+
+  border: none;
+  outline: none;
+
+  -webkit-app-region: no-drag;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+}

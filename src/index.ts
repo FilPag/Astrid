@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
 import * as Astrid from './main/Astrid';
 import { startStream, stopStream } from './main/StreamManager';
@@ -38,20 +38,23 @@ app.whenReady().then(() => {
   });
 
   ipcMain.on('sendMessage', async (_event, message) => {
+    if (_event.sender.id === WindowManager.searchBar.id) {
+      WindowManager.refocusMainWindow();
+    }
+
     return Astrid.sendMessage(message, onMessageCreated, onMessageDelta, onMessageDone);
   });
 
-  Astrid.init();
+  nativeTheme.themeSource = 'dark';
 
+  Astrid.init();
   TrayManager.createTray();
+
   setTimeout(() => {
     WindowManager.createMainWindow(TrayManager.tray.getBounds());
   }, 500);
 
-  const ret = globalShortcut.register('Alt+Space', () => {
-    console.log('Alt+Space is pressed');
-  });
-  //WindowManager.mainWindow.hide();
+  WindowManager.createSearchBar();
 });
 
 app.on('before-quit', () => {
