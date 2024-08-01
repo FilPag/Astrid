@@ -2,6 +2,7 @@ import OpenAI, { toFile } from 'openai';
 import { AssistantStream } from 'openai/lib/AssistantStream';
 import { AssistantStreamEvent } from 'openai/resources/beta/assistants';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
+import { ipc_chat_message } from '../render/types';
 import { AssistantPrompt } from './AssistantPrompt';
 import { functions, handleToolCall } from './functions';
 
@@ -54,9 +55,6 @@ const addEventListensers = (
 
   currentRun.on('messageDone', async (msg: Message) => {
     onDone(msg);
-    //No need to to this since files doesn't cost anything
-    /*await openai.files.del(file_ID)
-    console.debug('file deleted');*/
   });
 
   //Handle other events
@@ -74,17 +72,13 @@ const addEventListensers = (
     }
   });
 };
-interface ipc_message {
-  role: string;
-  content: any;
-}
 
 export const cancelRun = () => {
   currentRun.abort();
 };
 
 export const sendMessage = async (
-  message: ipc_message,
+  message: ipc_chat_message,
   onCreate: (arg0: Message) => void,
   onDelta: (arg0: MessageDelta, arg1: Message) => void,
   onDone: (arg0: Message) => void

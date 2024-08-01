@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
 import * as Astrid from './main/Astrid';
 import { startStream, stopStream } from './main/StreamManager';
@@ -37,8 +37,13 @@ app.whenReady().then(() => {
     Astrid.cancelRun();
   });
 
+  ipcMain.on('openLink', (_event, url) => {
+    shell.openExternal(url);
+  });
+
   ipcMain.on('sendMessage', async (_event, message) => {
     if (_event.sender.id === WindowManager.searchBar.id) {
+      WindowManager.mainWindow.webContents.send('userMessage', message);
       WindowManager.refocusMainWindow();
     }
 

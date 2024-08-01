@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import stop from '../../assets/stop.svg';
 import upArrow from '../../assets/up_arrow.svg';
 import styles from './InputBar.module.scss';
@@ -11,6 +11,21 @@ export interface InputBarProps {
 }
 export const InputBar: React.FC<InputBarProps> = ({ className, disabled, onSubmit, onCancel }) => {
   const [text, setText] = useState('');
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, []);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -37,20 +52,14 @@ export const InputBar: React.FC<InputBarProps> = ({ className, disabled, onSubmi
     }
   };
 
-  const auto_grow = (event: React.FormEvent<HTMLTextAreaElement>) => {
-    const element = event.currentTarget;
-    element.style.height = 'fit-content';
-    element.style.height = element.scrollHeight + 'px';
-  };
-
   return (
     <div className={`${styles.inputBarContainer} ${className}`}>
       <textarea
         className={`${styles.inputBar}`}
+        ref={inputRef}
         disabled={disabled}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        onInput={auto_grow}
         placeholder="Send a message to Astrid"
         value={text}
       ></textarea>

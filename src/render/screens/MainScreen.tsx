@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { Message } from 'openai/resources/beta/threads/messages';
 import toggleIcon from '../../assets/share_icon.svg';
-import { InputBar, Message as MessageComponent, SlideToggle, chatMessage } from '../components';
+import { InputBar, Message as MessageComponent, SlideToggle, TypingDots, chatMessage } from '../components';
+import { ipc_chat_message } from '../types';
 import styles from './MainScreen.module.scss';
 
 export interface MainScreenProps {
@@ -17,11 +18,11 @@ const getVideoStream = async (srcID: string) => {
       mandatory: {
         chromeMediaSource: 'desktop',
         chromeMediaSourceId: srcID,
-        minFrameRate: 60,
-        minWidth: 1280,
-        minHeight: 720,
-        maxWidth: 1280,
-        maxHeight: 720,
+        minFrameRate: 10,
+        minWidth: 1920,
+        minHeight: 1080,
+        maxWidth: 1920,
+        maxHeight: 1080,
       },
     },
   });
@@ -40,6 +41,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   const [messages, setMessages] = useState<chatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState<chatMessage>(undefined);
   const [isDone, setIsDone] = useState<boolean>(true);
+  const [isThinking, setIsThinking] = useState<boolean>(false);
   const [isSharing, setIsSharing] = useState<boolean>(false);
   const [stream, setStream] = useState<MediaStream>(undefined);
 
@@ -79,6 +81,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
     const userMessage: chatMessage = { role: 'user', content: message };
     setMessages([...messages, userMessage]);
     setIsDone(false);
+    setIsThinking(true);
 
     const image = await getCurrentFrame();
 
@@ -89,13 +92,14 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   };
 
   const onCancel = () => {
-    console.log('aborting');
+    console.debug('aborting');
     window.electronAPI.cancelRun();
 
     setMessages((prevMessages) => [...prevMessages, currentMessage]);
     setCurrentMessage(undefined);
 
     setIsDone(true);
+    setIsThinking(false);
   };
 
   useEffect(() => {
@@ -104,14 +108,23 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
       if (videoRef.current) videoRef.current.srcObject = stream;
     });
 
+    window.electronAPI.onUserMessage((message: ipc_chat_message) => {
+      setIsDone(false);
+      setIsThinking(true);
+
+      const processedMessage: chatMessage = { role: 'user', content: message.content.message };
+      setMessages((prevMessages) => [...prevMessages, processedMessage]);
+    });
+
     window.electronAPI.onMessageCreated((message: Message) => {
       setCurrentMessage(processMessage(message));
+      setIsThinking(false);
     });
     window.electronAPI.onMessageDelta((delta: any, snapshot: Message) => {
       setCurrentMessage(processMessage(snapshot));
     });
-    window.electronAPI.onMessageDone((msg: Message) => {
-      const processedMsg = processMessage(msg);
+    window.electronAPI.onMessageDone((message: Message) => {
+      const processedMsg = processMessage(message);
       setMessages((prevMessages) => [...prevMessages, processedMsg]);
 
       setCurrentMessage(undefined);
@@ -135,6 +148,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
         ))}
         {currentMessage && <MessageComponent message={currentMessage} />}
       </ul>
+      {isThinking && <TypingDots className={styles.dots} />}
       <InputBar className={styles.inputBar} onSubmit={onSubmit} onCancel={onCancel} disabled={!isDone} />
     </div>
   );

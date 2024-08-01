@@ -1,4 +1,4 @@
-import { BrowserWindow, globalShortcut } from 'electron';
+import { app, BrowserWindow, globalShortcut } from 'electron';
 const { screen } = require('electron');
 
 export let shouldQuit = false;
@@ -19,7 +19,7 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
     minWidth: 300,
     height: 400,
     width: 300,
-    //resizable: false,
+    tabbingIdentifier: 'astrid',
     vibrancy: 'popover',
     backgroundMaterial: 'acrylic',
     webPreferences: {
@@ -28,9 +28,7 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
   });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
-  mainWindow.setAlwaysOnTop(true, 'floating');
-  //mainWindow.webContents.openDevTools({ mode: 'undocked' });
+  mainWindow.webContents.openDevTools({ mode: 'undocked' });
 
   if (process.platform === 'win32') {
     mainWindow.menuBarVisible = false;
@@ -40,6 +38,7 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
     if (!shouldQuit) {
       event.preventDefault();
       mainWindow.hide();
+      app.dock.hide();
     }
   });
 };
@@ -50,6 +49,7 @@ export const createSearchBar = (): void => {
     height: 60,
     width: 600,
     frame: false,
+    hiddenInMissionControl: true,
     focusable: true,
     resizable: false,
     vibrancy: 'window',
@@ -80,11 +80,11 @@ export const createSearchBar = (): void => {
       console.error('registration failed');
     }
 
-    searchBar.webContents.openDevTools({ mode: 'detach' });
+    //searchBar.webContents.openDevTools({ mode: 'detach' });
   });
 
   searchBar.on('blur', () => {
-    //searchBar.hide();
+    searchBar.hide();
   });
 };
 

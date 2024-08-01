@@ -10,11 +10,6 @@ declare global {
 }
 
 const root = createRoot(document.getElementById('root'));
-//root.render(<MainScreen />);
-console.log(window.location.pathname);
-if (window.location.pathname === 'main_window/input') {
-}
-
 root.render(
   <HashRouter>
     <Routes>

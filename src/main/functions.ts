@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { app } from 'electron';
+import { app, clipboard } from 'electron';
 import { AssistantTool } from 'openai/resources/beta/assistants';
 import os from 'os';
 import util from 'util';
@@ -11,6 +11,20 @@ export const functions = [
     type: 'function',
     function: {
       name: 'get_systsem_information',
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'writeClipBoard',
+      parameters: {
+        type: 'object',
+        properties: {
+          text: {
+            type: 'string',
+          },
+        },
+      },
     },
   },
   {
@@ -32,14 +46,20 @@ export const functions = [
   },
 ] as AssistantTool[];
 
+const writeClipboard = async (args: string) => {
+  const argObj = JSON.parse(args);
+  console.debug(`adding ${argObj.text} to clipboard`);
+  await clipboard.writeText(argObj.text);
+};
+
 const runCommand = async (args: string) => {
   const argObj = JSON.parse(args);
 
   try {
-    console.log(`Executing command: \x1b[32m${argObj.command}\x1b[0m`);
+    console.debug(`Executing command: \x1b[32m${argObj.command}\x1b[0m`);
     const { stdout, stderr } = await execPromise(argObj.command);
-    console.log(`stdout: \x1b[33m${stdout}\x1b[0m`);
-    console.log(`stderr: \x1b[31m${stderr}\x1b[0m`);
+    console.debug(`stdout: \x1b[33m${stdout}\x1b[0m`);
+    console.debug(`stderr: \x1b[31m${stderr}\x1b[0m`);
 
     return JSON.stringify({ stdout: stdout, stderr: stderr });
   } catch (error) {
@@ -69,6 +89,13 @@ export const handleToolCall = async (callId: string, functionName: string, args:
       return {
         tool_call_id: callId,
         output: res,
+      };
+    case 'writeClipBoard':
+      console.debug(args);
+      await writeClipboard(args);
+      return {
+        tool_call_id: callId,
+        output: 'Done',
       };
     default:
       return {
