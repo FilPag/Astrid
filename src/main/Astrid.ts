@@ -50,9 +50,10 @@ const addEventListensers = (
   onDone: (arg0: ipc_chat_message) => void
 ) => {
   currentRun.on('abort', () => {
+    if (currentRun.currentRun() !== undefined) {
+      openai.beta.threads.runs.cancel(currentThread.id, currentRun.currentRun().id);
+    }
     console.debug('Run aborted');
-    currentRun.currentRun();
-    openai.beta.threads.runs.cancel(currentThread.id, currentRun.currentRun().id);
   });
   currentRun.on('messageCreated', (msg: Message) => {
     onCreate(processMessage(msg));
@@ -67,7 +68,6 @@ const addEventListensers = (
     chatLog.push(processedMsg);
     onDone(processedMsg);
   });
-
   //Handle other events
   currentRun.on('event', async (event: AssistantStreamEvent) => {
     if (event.event === 'thread.run.requires_action') {
@@ -85,7 +85,12 @@ const addEventListensers = (
 };
 
 export const cancelRun = () => {
-  currentRun.abort();
+  if (currentRun.aborted) return;
+  try {
+    currentRun.abort();
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const getChatLog = () => {

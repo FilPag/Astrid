@@ -38,11 +38,11 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
   };
 
   const onCancel = () => {
-    console.debug('aborting');
     window.electronAPI.cancelRun();
-
-    setMessages((prevMessages) => [...prevMessages, currentMessage]);
-    setCurrentMessage(undefined);
+    if (currentMessage !== undefined && currentMessage.role !== undefined) {
+      setMessages((prevMessages) => [...prevMessages, currentMessage]);
+      setCurrentMessage(undefined);
+    }
 
     setIsDone(true);
     setIsThinking(false);

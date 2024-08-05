@@ -1,6 +1,8 @@
+import { execFile } from 'child_process';
 import { screen } from 'electron';
+import fs from 'fs';
 import jimo from 'jimp';
-import screenshot from 'screenshot-desktop';
+import os from 'os';
 
 export let isStreaming = false;
 
@@ -8,15 +10,46 @@ export const getMonitorInFocus = async () => {
   const cursorPosition = screen.getCursorScreenPoint();
   const currentMonitor = screen.getDisplayNearestPoint(cursorPosition);
 
-  return currentMonitor.id - 1;
+  const ids = screen
+    .getAllDisplays()
+    .map((display) => display.id)
+    .sort();
+  const indexMapping: { [key: number]: number } = {};
+  ids.forEach((id, index) => {
+    indexMapping[id] = index + 1;
+  });
+
+  return indexMapping[currentMonitor.id];
+};
+
+const screenCaptureMac = async (screenID: number): Promise<Buffer> => {
+  const tmpFile = `${os.tmpdir()}/screenshot.png`;
+
+  return new Promise<Buffer>((resolve, reject) => {
+    execFile('screencapture', ['-D', screenID.toString(), '-C', '-x', '-t', 'png', tmpFile], (err: any) => {
+      if (err) {
+        reject(err);
+      } else {
+        const data = fs.readFileSync(tmpFile);
+        fs.unlinkSync(tmpFile);
+        resolve(data);
+      }
+    });
+  });
 };
 
 export const getCurrentFrame = async () => {
-  const screenID = await getMonitorInFocus();
   try {
-    const image = await screenshot({ screen: screenID, format: 'png' }); // this is slow. TODO find better alternative for screenshot
+    const screenID = await getMonitorInFocus();
+    let image;
+    if (os.platform() === 'darwin') {
+      image = await screenCaptureMac(screenID);
+    } else {
+      throw new Error('Unsupported platform');
+    }
     const downScaled = (await jimo.read(image)).resize(1920, 1080);
-    return await downScaled.getBufferAsync(jimo.MIME_PNG);
+    console.debug('Sent');
+    return downScaled.getBufferAsync(jimo.MIME_PNG);
   } catch (e) {
     console.error(e);
     return undefined;

@@ -94,7 +94,7 @@ export const refocusMainWindow = (): void => {
 };
 
 export const toggleSearchBar = (): void => {
-  if (searchBar.isVisible()) {
+  if (searchBar.isFocused()) {
     searchBar.hide();
   } else {
     const mousePosition = screen.getCursorScreenPoint();

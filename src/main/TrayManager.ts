@@ -1,5 +1,6 @@
 import { Menu, Tray, app, nativeImage } from 'electron';
 import * as path from 'path';
+import { startStream, stopStream } from './StreamManager';
 import * as WindowManager from './WindowManager';
 
 const trayIcon = nativeImage.createFromPath(path.join(app.getAppPath(), '.webpack/assets/icon.png'));
@@ -22,6 +23,11 @@ export const createTray = () => {
       label: 'Screen Share',
       type: 'checkbox',
       click: (box) => {
+        if (box.checked) {
+          startStream();
+        } else {
+          stopStream();
+        }
         WindowManager.mainWindow.webContents.send('onStreamToggle', box.checked);
       },
     },

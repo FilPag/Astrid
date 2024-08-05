@@ -21,7 +21,6 @@ const onMessageDone = (message: ipc_chat_message) => {
     const nextMessage = messageQueue.shift();
 
     WindowManager.mainWindow.webContents.send('userMessage', nextMessage);
-    WindowManager.refocusMainWindow();
     processMessage(nextMessage);
   } else {
     busy = false;
