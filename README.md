@@ -15,9 +15,11 @@ Astrid is an intelligent assistant powered by ChatGPT, designed to enhance your 
 
 Astrid can be utilized for various tasks, including:
 
-- Quick calculations or data retrieval.
-- Automating repetitive command-line tasks.
-- Gathering information based on visual content.
+- Quick calculations or data retrieval to streamline your workflow.
+- Automating repetitive command-line tasks for efficiency.
+- Gathering information based on visual content for enhanced context.
+- Assisting with document editing and formatting through clipboard management.
+- Providing tech support by executing system commands and gathering system information.
 
 ## Installation Instructions
 
