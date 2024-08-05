@@ -3,6 +3,7 @@ import * as Astrid from '../main/Astrid';
 import * as WindowManager from '../main/WindowManager';
 import { ipc_chat_message } from '../render/types';
 import { getCurrentFrame, isStreaming, startStream, stopStream } from './StreamManager';
+import { setStreamStatus } from './TrayManager';
 
 let busy = false;
 const messageQueue: ipc_chat_message[] = [];
@@ -38,9 +39,11 @@ const processMessage = async (message: ipc_chat_message) => {
 
 export const initIpcEvents = async () => {
   ipcMain.handle('startStream', () => {
+    setStreamStatus(true);
     return startStream();
   });
   ipcMain.handle('stopStream', () => {
+    setStreamStatus(false);
     return stopStream();
   });
 

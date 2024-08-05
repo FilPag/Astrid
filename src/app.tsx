@@ -10,6 +10,7 @@ declare global {
 }
 
 const root = createRoot(document.getElementById('root'));
+console.log(window.location.pathname);
 root.render(
   <HashRouter>
     <Routes>

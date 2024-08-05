@@ -12,7 +12,7 @@ export const triggerQuit = (): void => {
   shouldQuit = true;
 };
 
-export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
+export const createMainWindow = (): void => {
   mainWindow = new BrowserWindow({
     title: 'Astrid',
     minHeight: 400,
@@ -28,7 +28,9 @@ export const createMainWindow = (trayBounds: Electron.Rectangle): void => {
   });
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-  mainWindow.webContents.openDevTools({ mode: 'undocked' });
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools({ mode: 'undocked' });
+  }
 
   if (process.platform === 'win32') {
     mainWindow.menuBarVisible = false;
@@ -69,7 +71,7 @@ export const createSearchBar = (): void => {
     searchBar.excludedFromShownWindowsMenu = true;
   }
 
-  searchBar.loadURL(MAIN_WINDOW_WEBPACK_ENTRY + '/#/input');
+  searchBar.loadURL(MAIN_WINDOW_WEBPACK_ENTRY + '#input');
 
   searchBar.setAlwaysOnTop(true, 'floating');
   searchBar.on('ready-to-show', () => {
@@ -79,8 +81,6 @@ export const createSearchBar = (): void => {
     if (!ret) {
       console.error('registration failed');
     }
-
-    //searchBar.webContents.openDevTools({ mode: 'detach' });
   });
 
   searchBar.on('blur', () => {
@@ -108,15 +108,4 @@ export const toggleSearchBar = (): void => {
     searchBar.show();
     searchBar.focus();
   }
-};
-
-export const focusWindow = (trayBounds: Electron.Rectangle): void => {
-  if (trayBounds.y !== mainWindow.getBounds().y) {
-    mainWindow.setBounds({
-      x: trayBounds.x,
-      y: trayBounds.y,
-    });
-  }
-  mainWindow.show();
-  mainWindow.focus();
 };

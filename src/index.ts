@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { app, BrowserWindow, nativeTheme } from 'electron';
 import * as Astrid from './main/Astrid';
 import { initIpcEvents } from './main/IPCHandler';
-import * as streamManager from './main/StreamManager';
 import * as TrayManager from './main/TrayManager';
 import * as WindowManager from './main/WindowManager';
 
@@ -11,9 +10,9 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-if (process.platform === 'darwin') {
+/*if (process.platform === 'darwin') {
   app.dock.hide();
-}
+}*/
 
 app.whenReady().then(() => {
   nativeTheme.themeSource = 'dark';
@@ -21,13 +20,8 @@ app.whenReady().then(() => {
   initIpcEvents();
   Astrid.init();
   TrayManager.createTray();
-
-  setTimeout(() => {
-    WindowManager.createMainWindow(TrayManager.tray.getBounds());
-  }, 500);
-
   WindowManager.createSearchBar();
-  streamManager.getCurrentFrame();
+  WindowManager.createMainWindow();
 });
 
 app.on('before-quit', () => {
@@ -36,7 +30,7 @@ app.on('before-quit', () => {
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    WindowManager.createMainWindow(TrayManager.tray.getBounds());
+    WindowManager.createMainWindow();
   }
 
   if (!WindowManager.mainWindow.isVisible()) {

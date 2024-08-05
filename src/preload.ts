@@ -1,10 +1,8 @@
 // See the Electron documentation for details on how to use preload scripts:
 
+import { contextBridge, ipcRenderer } from 'electron';
 import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
 import { ipc_chat_message } from './render/types';
-
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   startStream: () => ipcRenderer.invoke('startStream'),
@@ -24,6 +22,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
       callback(message);
     });
   },
+
+  onStreamToggle: (callback: (streamStatus: boolean) => void) => {
+    ipcRenderer.on('onStreamToggle', (event, streamStatus) => {
+      callback(streamStatus);
+    });
+  },
+
   onMessageCreated: (callback: (arg0: Message) => void) => {
     ipcRenderer.on('messageCreated', (event, message) => {
       callback(message);

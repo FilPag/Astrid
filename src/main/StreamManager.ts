@@ -1,6 +1,6 @@
 import { screen } from 'electron';
+import jimo from 'jimp';
 import screenshot from 'screenshot-desktop';
-import sharp from 'sharp';
 
 export let isStreaming = false;
 
@@ -14,9 +14,9 @@ export const getMonitorInFocus = async () => {
 export const getCurrentFrame = async () => {
   const screenID = await getMonitorInFocus();
   try {
-    const image = await screenshot({ screen: screenID, format: 'png' });
-    const downScaled = await sharp(image).resize(1920, 1080);
-    return downScaled.toBuffer();
+    const image = await screenshot({ screen: screenID, format: 'png' }); // this is slow. TODO find better alternative for screenshot
+    const downScaled = (await jimo.read(image)).resize(1920, 1080);
+    return await downScaled.getBufferAsync(jimo.MIME_PNG);
   } catch (e) {
     console.error(e);
     return undefined;

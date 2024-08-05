@@ -83,7 +83,7 @@ export const MainScreen: React.FC<MainScreenProps> = () => {
 
   return (
     <div className={styles.mainScreenContainer}>
-      <SlideToggle className={styles.streamToggle} onToggle={toggleStream} icon={toggleIcon} />
+      <SlideToggle className={styles.streamToggle} toggleCallback={toggleStream} icon={toggleIcon} />
       <ul className={styles.messageLog} ref={messageLogRef}>
         {messages.map((message, index) => (
           <MessageComponent message={message} key={index} />

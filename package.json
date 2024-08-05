@@ -1,8 +1,8 @@
 {
   "name": "astrid",
-  "productName": "astrid",
+  "productName": "Astrid",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Your smart assistant",
   "main": ".webpack/main",
   "scripts": {
     "dev": "nodemon --exec \"electron-forge start\"",
@@ -57,14 +57,15 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@types/jimp": "^0.2.28",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "@types/screenshot-desktop": "^1.12.3",
-    "@types/sharp": "^0.32.0",
     "copy-webpack-plugin": "^12.0.2",
     "dotenv": "^16.4.5",
     "electron-squirrel-startup": "^1.0.1",
     "file-loader": "^6.2.0",
+    "jimp": "^0.22.12",
     "nodemon": "^3.1.0",
     "openai": "^4.47.1",
     "react": "^18.3.1",
@@ -72,7 +73,6 @@
     "react-markdown": "^9.0.1",
     "react-router-dom": "^6.25.1",
     "screenshot-desktop": "^1.15.0",
-    "sharp": "^0.33.4",
     "stylelint-config-standard-scss": "^13.1.0",
     "typed-scss-modules": "^8.0.1"
   },
