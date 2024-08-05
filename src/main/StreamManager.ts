@@ -1,45 +1,32 @@
-import { desktopCapturer, screen } from 'electron';
-import { mainWindow } from './WindowManager';
+import { screen } from 'electron';
+import screenshot from 'screenshot-desktop';
+import sharp from 'sharp';
 
-let streamMonitor: NodeJS.Timeout;
-let lastMonitorId = '';
+export let isStreaming = false;
 
 export const getMonitorInFocus = async () => {
   const cursorPosition = screen.getCursorScreenPoint();
   const currentMonitor = screen.getDisplayNearestPoint(cursorPosition);
 
-  const sources = await desktopCapturer.getSources({ types: ['screen'] });
-  const activeSource = sources.find((source) => source.display_id === currentMonitor.id.toString());
-
-  if (activeSource === undefined) {
-    console.error('Unable to find source with id: ' + currentMonitor.id.toString());
-    return;
-  }
-  return activeSource.id;
+  return currentMonitor.id - 1;
 };
 
-export const streamCron = async () => {
-  const srcID = await getMonitorInFocus();
-  if (srcID !== lastMonitorId) {
-    lastMonitorId = srcID;
-    mainWindow.webContents.send('updateStreamSource', srcID);
+export const getCurrentFrame = async () => {
+  const screenID = await getMonitorInFocus();
+  try {
+    const image = await screenshot({ screen: screenID, format: 'png' });
+    const downScaled = await sharp(image).resize(1920, 1080);
+    return downScaled.toBuffer();
+  } catch (e) {
+    console.error(e);
+    return undefined;
   }
 };
 
 export const startStream = async () => {
-  const srcID = await getMonitorInFocus();
-
-  if (streamMonitor === undefined) {
-    streamMonitor = setInterval(() => {
-      streamCron();
-    }, 100);
-    lastMonitorId = srcID;
-  }
-
-  return srcID;
+  isStreaming = true;
 };
 
 export const stopStream = async () => {
-  clearInterval(streamMonitor);
-  streamMonitor = undefined;
+  isStreaming = false;
 };

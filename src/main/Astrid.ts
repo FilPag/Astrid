@@ -10,11 +10,14 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const chatLog: ipc_chat_message[] = [];
+
 let astrid: OpenAI.Beta.Assistant;
 let currentThread: OpenAI.Beta.Thread;
 let currentRun: AssistantStream;
 
 const instructionString = AssistantPrompt;
+
 export const init = async () => {
   const assistants = await openai.beta.assistants.list();
   if (assistants.data.length === 0) {
@@ -35,26 +38,34 @@ export const init = async () => {
   currentThread = await openai.beta.threads.create();
 };
 
+const processMessage = (message: Message) => {
+  if (message.content.length === 0) return undefined;
+  if (message.content[0].type !== 'text') return undefined;
+  return { role: message.role, content: { message: message.content[0].text.value } } as ipc_chat_message;
+};
+
 const addEventListensers = (
-  onCreate: (arg0: any) => void,
-  onDelta: (arg0: OpenAI.Beta.Threads.Messages.MessageDelta, arg1: OpenAI.Beta.Threads.Messages.Message) => void,
-  onDone: (arg0: OpenAI.Beta.Threads.Messages.Message) => void
+  onCreate: (arg0: ipc_chat_message) => void,
+  onDelta: (arg0: ipc_chat_message) => void,
+  onDone: (arg0: ipc_chat_message) => void
 ) => {
   currentRun.on('abort', () => {
     console.debug('Run aborted');
     currentRun.currentRun();
     openai.beta.threads.runs.cancel(currentThread.id, currentRun.currentRun().id);
   });
-  currentRun.on('messageCreated', (msg) => {
-    onCreate(msg);
+  currentRun.on('messageCreated', (msg: Message) => {
+    onCreate(processMessage(msg));
   });
 
   currentRun.on('messageDelta', (delta: MessageDelta, snapshot: Message) => {
-    onDelta(delta, snapshot);
+    onDelta(processMessage(snapshot));
   });
 
-  currentRun.on('messageDone', async (msg: Message) => {
-    onDone(msg);
+  currentRun.on('messageDone', (msg: Message) => {
+    const processedMsg = processMessage(msg);
+    chatLog.push(processedMsg);
+    onDone(processedMsg);
   });
 
   //Handle other events
@@ -77,19 +88,23 @@ export const cancelRun = () => {
   currentRun.abort();
 };
 
+export const getChatLog = () => {
+  return chatLog;
+};
+
 export const sendMessage = async (
   message: ipc_chat_message,
-  onCreate: (arg0: Message) => void,
-  onDelta: (arg0: MessageDelta, arg1: Message) => void,
-  onDone: (arg0: Message) => void
+  image_buffer: Buffer,
+  onCreate: (arg0: ipc_chat_message) => void,
+  onDelta: (arg0: ipc_chat_message) => void,
+  onDone: (arg0: ipc_chat_message) => void
 ) => {
   const content: OpenAI.Beta.Threads.Messages.MessageContentPartParam[] = [
     { type: 'text', text: message.content.message },
   ];
 
-  if (message.content.image !== '') {
-    const buffer = Buffer.from(message.content.image.split(',')[1], 'base64');
-    const file = await openai.files.create({ file: await toFile(buffer, 'screenshot.png'), purpose: 'vision' });
+  if (image_buffer !== undefined) {
+    const file = await openai.files.create({ file: await toFile(image_buffer, 'screenshot.png'), purpose: 'vision' });
     content.push({
       type: 'image_file',
       image_file: { file_id: file.id },
@@ -106,5 +121,8 @@ export const sendMessage = async (
     tools: functions,
   });
 
+  const message_copy = { ...message };
+  message_copy.content.image = '';
+  chatLog.push(message_copy);
   addEventListensers(onCreate, onDelta, onDone);
 };

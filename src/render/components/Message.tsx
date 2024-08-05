@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import Markdown from 'react-markdown';
+import { ipc_chat_message } from '../types';
 import styles from './Message.module.scss';
-import { chatMessage } from './types';
 
 export interface MessageProps {
   className?: string;
-  message: chatMessage;
+  message: ipc_chat_message;
 }
 
 const handleLinkClick = (event: MouseEvent) => {
@@ -28,7 +28,7 @@ export const Message: React.FC<MessageProps> = ({ className, message }) => {
 
   return (
     <div className={`${styles.container} ${className} ${messageClass}`}>
-      <Markdown className={`${styles.message}`}>{message.content}</Markdown>
+      <Markdown className={`${styles.message}`}>{message.content.message}</Markdown>
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import 'dotenv/config';
-import { app, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron';
-import { Message, MessageDelta } from 'openai/resources/beta/threads/messages';
+import { app, BrowserWindow, nativeTheme } from 'electron';
 import * as Astrid from './main/Astrid';
-import { startStream, stopStream } from './main/StreamManager';
+import { initIpcEvents } from './main/IPCHandler';
+import * as streamManager from './main/StreamManager';
 import * as TrayManager from './main/TrayManager';
 import * as WindowManager from './main/WindowManager';
 
@@ -15,43 +15,10 @@ if (process.platform === 'darwin') {
   app.dock.hide();
 }
 
-const onMessageCreated = (message: Message) => {
-  WindowManager.mainWindow.webContents.send('messageCreated', message);
-};
-const onMessageDelta = (delta: MessageDelta, snapshot: Message) => {
-  WindowManager.mainWindow.webContents.send('messageDelta', delta, snapshot);
-};
-const onMessageDone = (message: Message) => {
-  WindowManager.mainWindow.webContents.send('messageDone', message);
-};
-
 app.whenReady().then(() => {
-  ipcMain.handle('startStream', () => {
-    return startStream();
-  });
-  ipcMain.handle('stopStream', () => {
-    return stopStream();
-  });
-
-  ipcMain.handle('cancelRun', () => {
-    Astrid.cancelRun();
-  });
-
-  ipcMain.on('openLink', (_event, url) => {
-    shell.openExternal(url);
-  });
-
-  ipcMain.on('sendMessage', async (_event, message) => {
-    if (_event.sender.id === WindowManager.searchBar.id) {
-      WindowManager.mainWindow.webContents.send('userMessage', message);
-      WindowManager.refocusMainWindow();
-    }
-
-    return Astrid.sendMessage(message, onMessageCreated, onMessageDelta, onMessageDone);
-  });
-
   nativeTheme.themeSource = 'dark';
 
+  initIpcEvents();
   Astrid.init();
   TrayManager.createTray();
 
@@ -60,11 +27,11 @@ app.whenReady().then(() => {
   }, 500);
 
   WindowManager.createSearchBar();
+  streamManager.getCurrentFrame();
 });
 
 app.on('before-quit', () => {
   WindowManager.triggerQuit();
-  console.log(TrayManager.tray.getBounds());
 });
 
 app.on('activate', () => {

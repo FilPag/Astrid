@@ -7,12 +7,12 @@ import { ipc_chat_message } from './render/types';
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  onUpdateStreamSource: (callback: (event: Electron.IpcRendererEvent, ...args: any[]) => void) =>
-    ipcRenderer.on('updateStreamSource', (_event, value) => callback(value)),
   startStream: () => ipcRenderer.invoke('startStream'),
   stopStream: () => ipcRenderer.invoke('stopStream'),
+
   cancelRun: () => ipcRenderer.invoke('cancelRun'),
-  sendMessage: (message: any) => {
+  getChatLog: () => ipcRenderer.invoke('getChatLog'),
+  sendMessage: (message: ipc_chat_message) => {
     ipcRenderer.send('sendMessage', message);
   },
 
