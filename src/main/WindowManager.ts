@@ -83,6 +83,9 @@ export const createSearchBar = (): void => {
     }
   });
 
+  searchBar.on('show', () => {
+    searchBar.focus();
+  });
   searchBar.on('blur', () => {
     searchBar.hide();
   });
@@ -94,7 +97,7 @@ export const refocusMainWindow = (): void => {
 };
 
 export const toggleSearchBar = (): void => {
-  if (searchBar.isFocused()) {
+  if (searchBar.isVisible() || searchBar.isFocused()) {
     searchBar.hide();
   } else {
     const mousePosition = screen.getCursorScreenPoint();
@@ -105,7 +108,8 @@ export const toggleSearchBar = (): void => {
     y = y + display.size.height / 2 - searchBar.getSize()[1] / 2;
 
     searchBar.setPosition(x, y);
-    searchBar.show();
-    searchBar.focus();
+    if (!searchBar.isVisible()) {
+      searchBar.show();
+    }
   }
 };
