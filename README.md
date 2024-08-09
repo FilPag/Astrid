@@ -1,5 +1,7 @@
 # Astrid
 
+![Icon](https://github.com/[FilPag]/[Astrid]/blob/main/src/assets/icon.png.jpg?raw=true)
+
 ## Overview
 
 Astrid is an intelligent assistant powered by ChatGPT, designed to enhance your computing experience. With direct access to your PC's features and capabilities, Astrid simplifies tasks and provides efficient solutions.
