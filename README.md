@@ -1,6 +1,8 @@
-# Astrid
+<p align="center">
+<img src="https://github.com/FilPag/Astrid/blob/main/src/assets/icon.png?raw=true" width="250">
+</p>
 
-![Icon](https://github.com/[FilPag]/[Astrid]/blob/main/src/assets/icon.png.jpg?raw=true)
+# Astrid
 
 ## Overview
 
