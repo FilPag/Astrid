@@ -3,7 +3,7 @@ import * as path from 'path';
 import { startStream, stopStream } from './StreamManager';
 import * as WindowManager from './WindowManager';
 
-const trayIcon = nativeImage.createFromPath(path.join(app.getAppPath(), '.webpack/assets/icon.png'));
+const trayIcon = nativeImage.createFromPath(path.join(app.getAppPath(), '.webpack/assets/icon@3x.png'));
 let trayMenu: Menu;
 export let tray: Tray;
 
