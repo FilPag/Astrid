@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { app, clipboard } from 'electron';
+import { app, clipboard, dialog } from 'electron';
 import { AssistantTool } from 'openai/resources/beta/assistants';
 import os from 'os';
 import util from 'util';
@@ -31,7 +31,7 @@ export const functions = [
     type: 'function',
     function: {
       name: 'run_command',
-      description: 'runs a command in the terminal of the host machine',
+      description: 'runs a command in the terminal (' + os.platform() + ')',
       parameters: {
         type: 'object',
         properties: {
@@ -39,8 +39,13 @@ export const functions = [
             type: 'string',
             description: 'zsh command',
           },
+          reason: {
+            type: 'string',
+            description: 'Short description of what the command does',
+          },
         },
-        required: ['command'],
+
+        required: ['command', 'reason'],
       },
     },
   },
@@ -56,6 +61,21 @@ const runCommand = async (args: string) => {
   const argObj = JSON.parse(args);
 
   try {
+    const response = await dialog.showMessageBox({
+      title: 'Dangerous Command warning',
+      type: 'warning',
+      defaultId: 0,
+      cancelId: 1,
+      buttons: ['Continue', 'Cancel'],
+      message: `Runing the command: \n${argObj.command}\nWith the reason:\n${argObj.reason}\n\nThis command could be dangerous. Are you sure you want to continue?`,
+    });
+
+    console.debug(response);
+
+    if (response.response === 1) {
+      return JSON.stringify({ stdout: '', stderr: 'Operation rejected by user' });
+    }
+
     console.debug(`Executing command: \x1b[32m${argObj.command}\x1b[0m`);
     const { stdout, stderr } = await execPromise(argObj.command);
     console.debug(`stdout: \x1b[33m${stdout}\x1b[0m`);

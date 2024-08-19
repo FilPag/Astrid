@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-
 import toggleIcon from '../../assets/share_icon.svg';
 import { InputBar, Message as MessageComponent, SlideToggle, TypingDots } from '../components';
 import { ipc_chat_message } from '../types';

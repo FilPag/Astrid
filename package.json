@@ -60,6 +60,7 @@
     "@types/jimp": "^0.2.28",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@types/screenshot-desktop": "^1.12.3",
     "copy-webpack-plugin": "^12.0.2",
     "dotenv": "^16.4.5",
@@ -72,6 +73,7 @@
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
     "react-router-dom": "^6.25.1",
+    "react-syntax-highlighter": "^15.5.0",
     "screenshot-desktop": "^1.15.0",
     "stylelint-config-standard-scss": "^13.1.0",
     "typed-scss-modules": "^8.0.1"
