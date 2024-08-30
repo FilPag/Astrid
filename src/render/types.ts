@@ -1,7 +1,7 @@
 export interface ipc_chat_message {
-  role: string;
+  role: 'user' | 'assistant';
   content: {
-    message: string;
+    message?: string;
     image?: string;
   };
 }

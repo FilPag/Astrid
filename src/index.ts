@@ -5,7 +5,6 @@ import { initIpcEvents } from './main/IPCHandler';
 import * as TrayManager from './main/TrayManager';
 import * as WindowManager from './main/WindowManager';
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }

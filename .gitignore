@@ -1,5 +1,6 @@
 models/*
 .env
+.yarn
 
 # Logs
 logs
